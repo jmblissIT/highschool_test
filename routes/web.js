@@ -6,4 +6,8 @@ router.get('/topslides', HomeController.getTopSlide);
 router.get('/midslides', HomeController.getMidSlide);
 router.get('/descriptions', HomeController.getHomeDescription);
 
+router.post('/topslides',HomeController.createTopSlides);
+router.put('/topslides/:id',HomeController.updateTopSlidesById);
+router.delete('/topslides/:id',HomeController.deleteTopSlidesById);
+
 export default router;
