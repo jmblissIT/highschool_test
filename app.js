@@ -4,8 +4,8 @@ import web from './routes/web.js';
 const app = express();
 import cors from 'cors';
 import 'dotenv/config'
-const port = process.env.PORT;
-const DATABASE_URL = process.env.DATABASE_URL;
+const port = process.env.PORT || '3000';
+const DATABASE_URL = process.env.DATABASE_URL || "mongodb+srv://prakhar:1998prakhar@highschool.cbyjsus.mongodb.net/test";
 
 //Database Connection
 connectDB(DATABASE_URL);
