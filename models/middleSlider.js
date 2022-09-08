@@ -2,7 +2,8 @@ import mongoose from "mongoose";
 
 //Defining Schema
 const middlesliderSchema = new mongoose.Schema({
-    filename:{type:String, required:true}
+    avatar :{type:String},
+    cloudinary_id :{type:String}
 })
 
 //Model

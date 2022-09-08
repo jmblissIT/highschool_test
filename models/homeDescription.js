@@ -2,7 +2,8 @@ import mongoose from "mongoose";
 
 //Defining Schema
 const homedescriptionboxSchema = new mongoose.Schema({
-    image:{type:String, required:true},
+    avatar :{type:String},
+    cloudinary_id :{type:String},
     title:{type:String, required:true},
     link:{type:String}
 })

@@ -1,7 +1,8 @@
 import TopSliderModel from '../models/topSlider.js';
 import MidSliderModel from '../models/middleSlider.js';
 import HomeDescriptionModel from '../models/homeDescription.js';
-import fs from "fs";
+import cloudinary from '../utils/cloudinary.js';
+
 
 class HomeController {
 
@@ -85,53 +86,42 @@ class HomeController {
 
     static createMidSlides =  async (req, res) =>{
         try {
-                const doc = new MidSliderModel({
-                    filename : req.file.filename
+            const result = await cloudinary.uploader.upload(req.file.path)
+                let doc = new MidSliderModel({
+                    avatar: result.secure_url,
+                    cloudinary_id: result.public_id
                 });
-                const result = await doc.save();
-                res.status(201).send(result);
+                await doc.save();
+                res.json(doc)
         } catch (error) {
             console.log(error);
         }
     }
 
     static updateMidSlidesById = async (req, res)=>{
-        try{
-            let id = req.params.id;
-            let new_img = "";
-
-            if (req.file){
-                new_img = req.file.filename;
-                try{
-                    fs.unlinkSync("./public/uploads/"+ req.body.old_image)
-                } catch (err){
-                    console.log(err)
-                }
-            } else {
-                new_img = req.body.old_image;
-            }
-         
-            await MidSliderModel.findByIdAndUpdate(id, {
-                filename : new_img, 
-            });
-            res.send({success:true});    
+        try{ 
+            let middleSlider = await MidSliderModel.findById(req.params.id);
+            await cloudinary.uploader.destroy(middleSlider.cloudinary_id);
+            const result = await cloudinary.uploader.upload(req.file.path);
+            const data ={
+                avatar: result.secure_url || middleSlider.avatar,
+                cloudinary_id: result.public_id || middleSlider.cloudinary_id
+            };
+            middleSlider = await MidSliderModel.findByIdAndUpdate(req.params.id, data, {new : true});
+            res.json(middleSlider)   
         }catch (error) {
             console.log(error);
         }
     }
     
-    static deleteMidSlidesById = (req, res) => {
+    static deleteMidSlidesById = async (req, res) => {
         try {
-             MidSliderModel.findByIdAndDelete(req.params.id, (err, result)=>{
-                if(result.filename != ""){
-                    try{
-                        fs.unlinkSync('./public/uploads/'+result.filename)
-                    } catch(err){
-                        console.log(err)
-                    }
-                }
-                res.send({success:true});
-        });
+        let middleSlider = await MidSliderModel.findById(req.params.id);
+        //delete image form cloudinary
+        await cloudinary.uploader.destroy(middleSlider.cloudinary_id);
+        // delete midslider from db
+        await middleSlider.remove();
+        res.json(middleSlider)
         } catch (error) {
             console.log(error);
         }
@@ -148,57 +138,47 @@ class HomeController {
 
     static createHomeDescription =  async (req, res) =>{
         try {
-                const doc = new HomeDescriptionModel({
-                    image : req.file.filename,
-                    title : req.body.title,
-                    link : req.body.link
+                const result = await cloudinary.uploader.upload(req.file.path)
+                let doc = new HomeDescriptionModel({
+                    title: req.body.title,
+                    link:req.body.link,
+                    avatar: result.secure_url,
+                    cloudinary_id: result.public_id
                 });
-                const result = await doc.save();
-                res.status(201).send(result);
+                await doc.save();
+                res.json(doc)
         } catch (error) {
             console.log(error);
         }
     }
 
     static updateHomeDescriptionById = async (req, res)=>{
-        try{
-            let id = req.params.id;
-            let new_img = "";
+        try{   
+            let description = await HomeDescriptionModel.findById(req.params.id);
+            await cloudinary.uploader.destroy(description.cloudinary_id);
+            const result = await cloudinary.uploader.upload(req.file.path);
+            const data ={
+                title: req.body.title || description.title,
+                link:req.body.link || description.link,
+                avatar: result.secure_url || description.avatar,
+                cloudinary_id: result.public_id || description.cloudinary_id
+            };
+            description = await HomeDescriptionModel.findByIdAndUpdate(req.params.id, data, {new : true});
+            res.json(description) 
 
-            if (req.file){
-                new_img = req.file.filename;
-                try{
-                    fs.unlinkSync("./public/uploads/"+ req.body.old_image)
-                } catch (err){
-                    console.log(err)
-                }
-            } else {
-                new_img = req.body.old_image;
-            }
-         
-            await HomeDescriptionModel.findByIdAndUpdate(id, {
-                title : req.body.title,
-                link : req.body.link,
-                image : new_img 
-            });
-            res.send({success:true});    
         }catch (error) {
             console.log(error);
         }
     }
 
-    static deleteHomeDescriptionById = (req, res) => {
+    static deleteHomeDescriptionById =async(req, res) => {
         try {
-            HomeDescriptionModel.findByIdAndDelete(req.params.id, (err, result)=>{
-                if(result.image != ""){
-                    try{
-                        fs.unlinkSync('./public/uploads/'+result.image)
-                    } catch(err){
-                        console.log(err)
-                    }
-                }
-                res.send({success:true});
-        });
+        let description = await HomeDescriptionModel.findById(req.params.id);
+        //delete image form cloudinary
+        await cloudinary.uploader.destroy(description.cloudinary_id);
+        // delete midslider from db
+        await description.remove();
+        res.json(description)
         } catch (error) {
             console.log(error);
         }
